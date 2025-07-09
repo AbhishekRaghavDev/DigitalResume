@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Welcome Abhishek</title>
+  <style>
+    :root {
+      --bg-light: #ffffff;
+      --bg-dark: #121212;
+      --text-light: #000000;
+      --text-dark: #ffffff;
+      --tab-light: #f5f5f5;
+      --tab-dark: #1e1e1e;
+      --tab-hover-light: #e0e0e0;
+      --tab-hover-dark: #333333;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: var(--bg-light);
+      color: var(--text-light);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 30px 10px;
+      margin: 0;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    body.dark {
+      background-color: var(--bg-dark);
+      color: var(--text-dark);
+    }
+
+    h1 {
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .theme-toggle {
+      position: absolute;
+      top: 15px;
+      right: 20px;
+      font-size: 22px;
+      cursor: pointer;
+      background: none;
+      border: none;
+      color: inherit;
+      transition: transform 0.2s ease;
+    }
+
+    .theme-toggle:hover {
+      transform: scale(1.1);
+    }
+
+    .tabs-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 20px;
+      width: 100%;
+      max-width: 1200px;
+    }
+
+    .tab {
+      background-color: var(--tab-light);
+      color: inherit;
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s, background-color 0.3s, box-shadow 0.3s;
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      font-size: 16px;
+      padding: 20px;
+      text-align: center;
+      position: relative;
+      cursor: pointer;
+    }
+
+    body.dark .tab {
+      background-color: var(--tab-dark);
+    }
+
+    .tab:hover {
+      transform: translateY(-6px) scale(1.03);
+      box-shadow: 0 12px 20px rgba(0, 0, 0, 0.2);
+      background-color: var(--tab-hover-light);
+    }
+
+    body.dark .tab:hover {
+      background-color: var(--tab-hover-dark);
+    }
+
+    .tab img {
+      width: 40px;
+      height: 40px;
+      object-fit: contain;
+    }
+
+    .tab button.delete-btn,
+    .tab button.edit-btn {
+      position: absolute;
+      top: 6px;
+      background: red;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .tab button.edit-btn {
+      left: 36px;
+      background: #555;
+    }
+
+    .tab button.delete-btn {
+      left: 6px;
+    }
+
+    .tab a {
+      color: inherit;
+      text-decoration: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      height: 100%;
+      width: 100%;
+    }
+
+    .plus-tab {
+      font-size: 32px;
+      font-weight: bold;
+      justify-content: center;
+    }
+
+    .modal, .pin-modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5);
+      justify-content: center;
+      align-items: center;
+      z-index: 999;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+      min-width: 300px;
+      transition: transform 0.3s ease;
+      transform: scale(0.9);
+      animation: modalFadeIn 0.3s ease forwards;
+    }
+
+    @keyframes modalFadeIn {
+      to {
+        transform: scale(1);
+      }
+    }
+
+    .modal-content input {
+      width: 90%;
+      padding: 10px;
+      margin: 8px 0;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    .modal-content button {
+      padding: 10px 20px;
+      margin: 5px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .modal-content .cancel {
+      background-color: #777;
+    }
+
+  body.dark .modal-content {
+  background: #1e1e1e;
+  color: #ffffff;
+  }
+  body.dark .modal-content input {
+  background: #2a2a2a;
+  color: #ffffff;
+  border: 1px solid #555;
+  }
+  </style>
+</head>
+<body>
+  <button class="theme-toggle" onclick="toggleTheme()" id="themeToggle">🌙</button>
+  <h1>Welcome Abhishek Raghav</h1>
+  <div class="tabs-container" id="tabsContainer"></div>
+
+  <!-- Create/Edit Modal -->
+  <div class="modal" id="modal">
+    <div class="modal-content" id="modal-content">
+      <h3 id="modalTitle">Create/Edit Tab</h3>
+      <input type="text" id="titleInput" placeholder="Tab Title">
+      <input type="text" id="logoInput" placeholder="Logo URL">
+      <input type="text" id="urlInput" placeholder="Website URL">
+      <div>
+        <button onclick="saveTab()">Save</button>
+        <button class="cancel" onclick="closeModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PIN Modal -->
+  <div class="pin-modal" id="pinModal">
+    <div class="modal-content">
+      <h3>Enter PIN</h3>
+      <input type="password" id="pinInput" placeholder="Enter PIN">
+      <div>
+        <button onclick="verifyPin()">Confirm</button>
+        <button class="cancel" onclick="closePinModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const LOCAL_STORAGE_KEY = "customTabs";
+    const THEME_KEY = "themePreference";
+    const PIN = "1010";
+
+    const container = document.getElementById("tabsContainer");
+    const toggleBtn = document.getElementById("themeToggle");
+
+    let editingTabId = null;
+    let pendingDeleteTabId = null;
+    let pendingEditTabId = null;
+    let pinActionType = null;
+
+    const defaultTabs = [
+      { id: 1, title: "Google", logo: "https://www.google.com/favicon.ico", url: "https://www.google.com" },
+      { id: 2, title: "YouTube", logo: "https://img.icons8.com/color/48/000000/youtube-play.png", url: "https://www.youtube.com" },
+      { id: 3, title: "LinkedIn", logo: "https://cdn-icons-png.flaticon.com/512/174/174857.png", url: "https://www.linkedin.com" },
+      { id: 4, title: "Naukri", logo: "https://static.naukimg.com/s/4/100/i/naukri_Logo.png", url: "https://www.naukri.com" },
+      { id: 5, title: "GitHub", logo: "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png", url: "https://www.github.com" },
+      { id: 6, title: "ChatGPT", logo: "https://seeklogo.com/images/O/openai-logo-8B9BFEDC26-seeklogo.com.png", url: "https://chat.openai.com" },
+      { id: 7, title: "Geeky Shows", logo: "https://img.icons8.com/color/48/000000/youtube-play.png", url: "https://www.youtube.com/@geekyshows/playlists" },
+      { id: 8, title: "JavaScript", logo: "https://upload.wikimedia.org/wikipedia/commons/6/6a/JavaScript-logo.png", url: "https://www.youtube.com/playlist?list=PLbGui_ZYuhiiaQjuOfvgx_-gzVBlCxrk0" },
+      { id: 9, title: "JS Advanced", logo: "https://upload.wikimedia.org/wikipedia/commons/6/6a/JavaScript-logo.png", url: "https://www.youtube.com/playlist?list=PLbGui_ZYuhihZ-pDxNZuQ7xOQ8IS2z3XI" },
+      { id: 10, title: "Node Mongo", logo: "https://cdn.worldvectorlogo.com/logos/mongodb-icon-1.svg", url: "https://www.youtube.com/playlist?list=PLbGui_ZYuhijy1SpwtIS9IwL6OJdbr4kE" },
+      { id: 11, title: "React JS", logo: "https://upload.wikimedia.org/wikipedia/commons/a/a7/React-icon.svg", url: "https://www.youtube.com/playlist?list=PLbGui_ZYuhignjLLXTJWkRJKN-SgAqClL" }
+    ];
+
+    window.addEventListener("DOMContentLoaded", () => {
+      if (!localStorage.getItem(LOCAL_STORAGE_KEY)) {
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(defaultTabs));
+      }
+      renderTabs();
+      loadTheme();
+    });
+
+    function renderTabs() {
+      container.innerHTML = "";
+      const tabs = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY)) || [];
+      tabs.forEach(renderTab);
+      renderAddButton();
+    }
+
+    function renderTab({ id, title, logo, url }) {
+      const tab = document.createElement("div");
+      tab.className = "tab";
+      tab.dataset.id = id;
+      tab.draggable = true;
+
+      const deleteBtn = document.createElement("button");
+      deleteBtn.className = "delete-btn";
+      deleteBtn.textContent = "×";
+      deleteBtn.onclick = () => {
+        if (id <= 11) {
+          pinActionType = "delete";
+          pendingDeleteTabId = id;
+          document.getElementById("pinModal").style.display = "flex";
+        } else if (confirm(`Delete "${title}"?`)) {
+          deleteTab(id);
+        }
+      };
+
+      const editBtn = document.createElement("button");
+      editBtn.className = "edit-btn";
+      editBtn.textContent = "✎";
+      editBtn.onclick = () => {
+        if (id <= 11) {
+          pinActionType = "edit";
+          pendingEditTabId = id;
+          document.getElementById("pinModal").style.display = "flex";
+        } else {
+          openEditModal(id);
+        }
+      };
+
+      const link = document.createElement("a");
+      link.href = url;
+      link.target = "_blank";
+
+      const img = document.createElement("img");
+      img.src = logo;
+      img.alt = title;
+
+      const text = document.createElement("div");
+      text.textContent = title;
+
+      link.appendChild(img);
+      link.appendChild(text);
+      tab.appendChild(deleteBtn);
+      tab.appendChild(editBtn);
+      tab.appendChild(link);
+
+      tab.addEventListener("dragstart", e => {
+        e.dataTransfer.setData("text/plain", id);
+      });
+
+      tab.addEventListener("dragover", e => {
+        e.preventDefault();
+        tab.style.border = "2px dashed #999";
+      });
+
+      tab.addEventListener("dragleave", () => {
+        tab.style.border = "none";
+      });
+
+      tab.addEventListener("drop", e => {
+        e.preventDefault();
+        const draggedId = parseInt(e.dataTransfer.getData("text/plain"));
+        if (draggedId !== id) reorderTabs(draggedId, id);
+        tab.style.border = "none";
+      });
+
+      container.appendChild(tab);
+    }
+
+    function renderAddButton() {
+      const addBtn = document.createElement("div");
+      addBtn.className = "tab plus-tab";
+      addBtn.textContent = "+";
+      addBtn.onclick = () => {
+        editingTabId = null;
+        openModal();
+      };
+      container.appendChild(addBtn);
+    }
+
+    function openModal() {
+      document.getElementById("modal").style.display = "flex";
+      document.getElementById("titleInput").value = "";
+      document.getElementById("logoInput").value = "";
+      document.getElementById("urlInput").value = "";
+    }
+
+    function closeModal() {
+      document.getElementById("modal").style.display = "none";
+      editingTabId = null;
+    }
+
+    function openEditModal(id) {
+      const tabs = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY)) || [];
+      const tab = tabs.find(t => t.id === id);
+      if (!tab) return;
+      editingTabId = id;
+      document.getElementById("titleInput").value = tab.title;
+      document.getElementById("logoInput").value = tab.logo;
+      document.getElementById("urlInput").value = tab.url;
+      document.getElementById("modal").style.display = "flex";
+    }
+
+    function saveTab() {
+      const title = document.getElementById("titleInput").value.trim();
+      const logo = document.getElementById("logoInput").value.trim();
+      const url = document.getElementById("urlInput").value.trim();
+      if (!title || !logo || !url) return alert("Please fill in all fields.");
+
+      const tabs = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY)) || [];
+
+      if (editingTabId) {
+        const index = tabs.findIndex(tab => tab.id === editingTabId);
+        if (index !== -1) {
+          tabs[index] = { id: editingTabId, title, logo, url };
+        }
+      } else {
+        tabs.push({ id: Date.now(), title, logo, url });
+      }
+
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(tabs));
+      closeModal();
+      renderTabs();
+    }
+
+    function deleteTab(id) {
+      let tabs = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY)) || [];
+      tabs = tabs.filter(tab => tab.id !== id);
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(tabs));
+      renderTabs();
+    }
+
+    function verifyPin() {
+      const pin = document.getElementById("pinInput").value;
+      if (pin === PIN) {
+        if (pinActionType === "delete" && pendingDeleteTabId) {
+          deleteTab(pendingDeleteTabId);
+        } else if (pinActionType === "edit" && pendingEditTabId) {
+          openEditModal(pendingEditTabId);
+        }
+        closePinModal();
+      } else {
+        alert("Incorrect PIN!");
+      }
+    }
+
+    function closePinModal() {
+      document.getElementById("pinModal").style.display = "none";
+      document.getElementById("pinInput").value = "";
+      pendingDeleteTabId = null;
+      pendingEditTabId = null;
+      pinActionType = null;
+    }
+
+    function reorderTabs(fromId, toId) {
+      const tabs = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY)) || [];
+      const fromIndex = tabs.findIndex(tab => tab.id === fromId);
+      const toIndex = tabs.findIndex(tab => tab.id === toId);
+      if (fromIndex > -1 && toIndex > -1) {
+        const [moved] = tabs.splice(fromIndex, 1);
+        tabs.splice(toIndex, 0, moved);
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(tabs));
+        renderTabs();
+      }
+    }
+
+    function toggleTheme() {
+      document.body.classList.toggle("dark");
+      const isDark = document.body.classList.contains("dark");
+      toggleBtn.textContent = isDark ? "☀️" : "🌙";
+      localStorage.setItem(THEME_KEY, isDark ? "dark" : "light");
+    }
+
+    function loadTheme() {
+      const savedTheme = localStorage.getItem(THEME_KEY);
+      if (savedTheme === "dark") {
+        document.body.classList.add("dark");
+        toggleBtn.textContent = "☀️";
+      } else {
+        toggleBtn.textContent = "🌙";
+      }
+    }
+  document.getElementById("pinInput").addEventListener("keydown", function (event) {
+  if (event.key === "Enter") {
+    verifyPin();
+  }
+  });
+
+  document.getElementById("modal-content").addEventListener("keydown", function (event) {
+  if (event.key === "Enter") {
+    saveTab();
+  }
+  });
+  </script>
+</body>
+</html>
